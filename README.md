@@ -45,7 +45,7 @@ https://noorfarhan-dev.github.io/AIOU-Study-Planner/
 
 ## GitHub Repository
 
-[Add your repository link here]
+https://github.com/noorfarhan-dev/AIOU-Study-Planner
 
 ## Future Improvements
 
