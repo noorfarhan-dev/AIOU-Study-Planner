@@ -41,7 +41,7 @@ No installation needed.
 
 ## Live Demo
 
-[Add your live demo link here, if you host it — e.g. via GitHub Pages]
+https://noorfarhan-dev.github.io/AIOU-Study-Planner/
 
 ## GitHub Repository
 
