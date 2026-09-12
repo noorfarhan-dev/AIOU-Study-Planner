@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AIOU Study Planner</title>
+<style>
+  :root{
+    --paper:#F6F4EC;
+    --ink:#20263A;
+    --ink-soft:#565F78;
+    --line:#DAD5C4;
+    --forest:#3F5D46;
+    --forest-soft:#E7EDE4;
+    --gold:#B8862F;
+    --gold-soft:#F3E8D2;
+    --card:#FFFEFA;
+    --danger:#9C4444;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--paper);
+    color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+    line-height:1.5;
+  }
+  .wrap{max-width:720px;margin:0 auto;padding:28px 20px 80px;}
+
+  header{margin-bottom:28px;}
+  .kicker{font-size:13px;color:var(--forest);font-weight:600;letter-spacing:.02em;margin-bottom:6px;}
+  h1{
+    font-family:Georgia,"Times New Roman",serif;
+    font-size:30px;
+    font-weight:600;
+    margin:0 0 8px;
+    color:var(--ink);
+    max-width:20ch;
+  }
+  .sub{color:var(--ink-soft);font-size:15px;max-width:52ch;}
+
+  .card{
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:4px;
+    padding:20px;
+    margin-bottom:16px;
+  }
+  .course-row{
+    display:grid;
+    grid-template-columns:1fr;
+    gap:10px;
+    padding:16px 0;
+    border-bottom:1px solid var(--line);
+  }
+  .course-row:last-child{border-bottom:none;}
+  .field-label{font-size:12px;color:var(--ink-soft);margin-bottom:4px;display:block;}
+  input[type=text],input[type=number],select{
+    width:100%;
+    padding:9px 10px;
+    border:1px solid var(--line);
+    border-radius:3px;
+    background:#fff;
+    font-size:15px;
+    color:var(--ink);
+    font-family:inherit;
+  }
+  input:focus,select:focus{outline:2px solid var(--forest);outline-offset:1px;}
+  .two-col{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+  .remove-btn{
+    background:none;border:none;color:var(--danger);font-size:13px;
+    cursor:pointer;padding:4px 0;text-align:left;
+  }
+  .add-course-btn{
+    background:none;border:1px dashed var(--line);color:var(--forest);
+    padding:10px;width:100%;border-radius:3px;cursor:pointer;font-size:14px;font-weight:600;
+    margin-top:4px;
+  }
+  .add-course-btn:hover{border-color:var(--forest);}
+
+  .hours-row{display:flex;align-items:center;gap:12px;margin-top:16px;}
+  .hours-row label{font-size:14px;font-weight:600;white-space:nowrap;}
+  .hours-row input{max-width:90px;}
+
+  .generate-btn{
+    width:100%;
+    background:var(--forest);
+    color:#fff;
+    border:none;
+    padding:14px;
+    font-size:15px;
+    font-weight:600;
+    border-radius:3px;
+    cursor:pointer;
+    margin-top:18px;
+  }
+  .generate-btn:hover{background:#324B39;}
+
+  .error{color:var(--danger);font-size:14px;margin-top:10px;}
+
+  /* Plan output */
+  .plan{margin-top:32px;}
+  .plan-title{font-family:Georgia,serif;font-size:22px;margin-bottom:4px;}
+  .plan-meta{color:var(--ink-soft);font-size:13px;margin-bottom:20px;}
+
+  .day{
+    display:grid;
+    grid-template-columns:52px 1fr;
+    gap:14px;
+    padding:16px 0;
+    border-bottom:1px solid var(--line);
+  }
+  .day:last-child{border-bottom:none;}
+  .day-num{
+    font-family:Georgia,serif;
+    font-size:22px;
+    color:var(--forest);
+    font-weight:600;
+    padding-top:2px;
+  }
+  .day-num small{display:block;font-family:inherit;font-size:11px;color:var(--ink-soft);font-weight:400;margin-top:2px;}
+  .task{
+    background:var(--forest-soft);
+    border-radius:4px;
+    padding:12px 14px;
+    margin-bottom:8px;
+  }
+  .task.revision{background:var(--gold-soft);}
+  .task:last-child{margin-bottom:0;}
+  .task-top{display:flex;align-items:flex-start;gap:10px;}
+  .task-top input[type=checkbox]{margin-top:4px;width:16px;height:16px;flex-shrink:0;accent-color:var(--forest);}
+  .task-course{font-size:11px;text-transform:uppercase;letter-spacing:.03em;color:var(--forest);font-weight:700;}
+  .task-topic{font-weight:600;font-size:15px;margin:2px 0;}
+  .task-topic.done{text-decoration:line-through;color:var(--ink-soft);}
+  .task-explain{font-size:14px;color:var(--ink);margin-top:6px;}
+  .task-minutes{font-size:12px;color:var(--ink-soft);margin-top:4px;}
+  .task-questions{margin-top:8px;font-size:13.5px;}
+  .task-questions summary{cursor:pointer;color:var(--gold);font-weight:600;}
+  .task-questions ol{margin:8px 0 0;padding-left:20px;}
+  .task-questions li{margin-bottom:4px;}
+
+  .quiz-btn{
+    background:none;border:1px solid var(--gold);color:var(--gold);
+    font-size:12.5px;padding:5px 10px;border-radius:3px;cursor:pointer;margin-top:8px;
+  }
+  .quiz-btn:hover{background:var(--gold-soft);}
+  .quiz-box{
+    background:#fff;border:1px solid var(--gold);border-radius:3px;padding:10px 12px;margin-top:8px;font-size:13.5px;
+  }
+
+  .progress-bar{height:6px;background:var(--line);border-radius:3px;overflow:hidden;margin:14px 0 0;}
+  .progress-fill{height:100%;background:var(--forest);transition:width .3s ease;}
+  .progress-label{font-size:12px;color:var(--ink-soft);margin-top:6px;}
+
+  .note{font-size:12px;color:var(--ink-soft);margin-top:6px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="kicker">AIOU · Semester Load Planner</div>
+    <h1>One schedule for every course you're juggling.</h1>
+    <p class="sub">List what's on your plate this semester and how many hours you actually have per day. Get one merged daily plan — not five separate ones you have to reconcile yourself.</p>
+  </header>
+
+  <div class="card" id="formCard">
+    <div id="courseList"></div>
+    <button class="add-course-btn" id="addCourseBtn" type="button">+ Add another course</button>
+
+    <div class="hours-row">
+      <label for="hoursInput">Hours available per day</label>
+      <input type="number" id="hoursInput" min="0.5" step="0.5" value="2">
+    </div>
+
+    <button class="generate-btn" id="generateBtn" type="button">Build my plan</button>
+    <div class="error" id="errorMsg" style="display:none;"></div>
+  </div>
+
+  <div id="planOutput"></div>
+</div>
+
+<script>
+/* ---------- Topic libraries: recognized AIOU BSCS courses get real sequences,
+   anything else falls back to a generic phase template. ---------- */
+const TOPIC_LIBRARY = [
+  { keys: ["data structure","algorithm"], topics:
+    ["Arrays: static vs dynamic, time complexity","Linked lists (singly/doubly)","Stacks and their applications","Queues and circular queues","Recursion and its use cases","Trees: binary trees & traversals","Binary search trees","Graphs: representation & traversal","Sorting algorithms (bubble/merge/quick)","Searching algorithms & hashing"] },
+  { keys: ["database"], topics:
+    ["ER modeling & entity relationships","Relational model & keys","SQL basics: SELECT, WHERE, JOIN","Normalization (1NF–3NF)","Subqueries & aggregate functions","Transactions & concurrency control","Indexing & query optimization"] },
+  { keys: ["automata","toa","formal language"], topics:
+    ["Regular expressions","Finite automata: DFA vs NFA","Kleene's theorem","Context-free grammars","Pushdown automata","Turing machines","Pumping lemma & closure properties"] },
+  { keys: ["calculus","multivariable"], topics:
+    ["Limits & continuity","Derivatives & chain rule","Integration techniques","Sequences & series","Convergence tests","Power series","Polar coordinates & applications"] },
+  { keys: ["ann","neural","machine learning"," ml ","deep learning"], topics:
+    ["Perceptron & linear models","Activation functions (sigmoid/ReLU/softmax)","Backpropagation basics","Overfitting, underfitting & regularization","Convolutional neural networks (CNN)","Recurrent networks (RNN/LSTM)","Autoencoders & dimensionality"] },
+  { keys: ["parallel","distributed","cuda"], topics:
+    ["Flynn's Taxonomy (SIMD/MIMD)","GPU architecture basics","CUDA programming model","RPC and message passing (MPI)","Synchronization & shared memory","Real-world case studies"] },
+  { keys: ["it service","itsm","service management"], topics:
+    ["ITIL framework overview","Service strategy","Service design","Service transition","Service operation","Case study application"] },
+  { keys: ["java","programming","oop","object oriented"], topics:
+    ["Syntax, variables & control structures","Loops & array patterns","OOP basics: classes & objects","Inheritance & polymorphism","Exception handling","Collections & data structures in practice"] },
+];
+
+const GENERIC_TOPICS = [
+  "Course introduction & key terminology",
+  "Core concept block 1",
+  "Core concept block 2",
+  "Core concept block 3",
+  "Applied practice / worked problems",
+  "Past papers & case studies",
+];
+
+const EXPLAIN_TEMPLATES = {
+  theoretical: t => `Read the relevant handout section on "${t}" slowly and take notes in your own words. Focus on definitions and how this idea connects to what came before it — theory courses are usually tested on precise understanding, not memorized lines.`,
+  numerical: t => `Work through at least 2-3 solved examples on "${t}" from the course book before attempting problems unaided. Numerical topics reward repetition — redo a problem you got wrong the next day.`,
+  conceptual: t => `Trace through "${t}" with a concrete example or small code snippet rather than just reading about it. If it's a technique, try implementing or diagramming it yourself.`,
+  mixed: t => `Spend the first half of this block understanding "${t}" from the handout, then the second half applying it to a practice question or example.`
+};
+
+const QUESTION_TEMPLATES = [
+  t => `Explain "${t}" in your own words as if teaching a junior student.`,
+  t => `What's one way "${t}" could show up as an exam question?`,
+  t => `Write down everything you remember about "${t}" from memory, then check the handout for gaps.`,
+  t => `How does "${t}" connect to the topic you studied the day before?`
+];
+
+const SELFCHECK_PROMPTS = [
+  t => `Close your notes. Give yourself 3 minutes to write everything you know about "${t}". Then compare against the handout — whatever you missed is what to revisit tomorrow.`,
+  t => `Teach "${t}" out loud, in one minute, as if explaining it to a classmate who missed that lecture.`,
+  t => `Try to construct one exam-style question of your own on "${t}" — writing a good question tests understanding as much as answering one does.`,
+  t => `Pick the part of "${t}" that felt least clear and re-read only that part, then re-explain it to yourself.`
+];
+
+function getTopicsForCourse(name){
+  const lower = " " + name.toLowerCase() + " ";
+  for(const entry of TOPIC_LIBRARY){
+    if(entry.keys.some(k => lower.includes(k))) return entry.topics.slice();
+  }
+  return GENERIC_TOPICS.slice();
+}
+
+/* ---------- Course form rows ---------- */
+let courseCount = 0;
+
+function courseRowTemplate(id){
+  return `
+  <div class="course-row" data-id="${id}">
+    <div>
+      <label class="field-label">Course name</label>
+      <input type="text" class="c-name" placeholder="e.g. Data Structures">
+    </div>
+    <div class="two-col">
+      <div>
+        <label class="field-label">Content type</label>
+        <select class="c-type">
+          <option value="theoretical">Theoretical</option>
+          <option value="numerical">Numerical / math</option>
+          <option value="conceptual">Conceptual / code</option>
+          <option value="mixed">Mixed</option>
+        </select>
+      </div>
+      <div>
+        <label class="field-label">Days until exam/deadline</label>
+        <input type="number" class="c-days" min="1" placeholder="e.g. 15">
+      </div>
+    </div>
+    <div class="two-col">
+      <div>
+        <label class="field-label">Your level</label>
+        <select class="c-level">
+          <option value="beginner">Beginner</option>
+          <option value="intermediate">Intermediate</option>
+          <option value="advanced">Advanced</option>
+        </select>
+      </div>
+      <div style="display:flex;align-items:flex-end;">
+        <button class="remove-btn" onclick="removeCourse(${id})" type="button">Remove course</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+function addCourse(){
+  courseCount++;
+  const div = document.createElement('div');
+  div.innerHTML = courseRowTemplate(courseCount);
+  document.getElementById('courseList').appendChild(div.firstElementChild);
+}
+function removeCourse(id){
+  const row = document.querySelector(`.course-row[data-id="${id}"]`);
+  if(row) row.remove();
+}
+document.getElementById('addCourseBtn').addEventListener('click', addCourse);
+addCourse();
+
+function collectCourses(){
+  const rows = document.querySelectorAll('.course-row');
+  const courses = [];
+  rows.forEach(row => {
+    const name = row.querySelector('.c-name').value.trim();
+    const type = row.querySelector('.c-type').value;
+    const days = row.querySelector('.c-days').value;
+    const level = row.querySelector('.c-level').value;
+    if(name && days){
+      courses.push({name, type, days: parseInt(days), level});
+    }
+  });
+  return courses;
+}
+
+function showError(msg){
+  const el = document.getElementById('errorMsg');
+  el.textContent = msg;
+  el.style.display = 'block';
+}
+function clearError(){
+  document.getElementById('errorMsg').style.display = 'none';
+}
+
+/* ---------- Plan generation (fully local, no network) ---------- */
+function buildPlan(courses, hoursPerDay){
+  const maxDays = Math.max(...courses.map(c => c.days));
+
+  // For each course, lay out which topic (or "revision") falls on which day.
+  const perCourseDayMap = {}; // course name -> array indexed by day-1 => topic string or null
+  courses.forEach(course => {
+    const topics = getTopicsForCourse(course.name);
+    const revisionDays = Math.max(1, Math.round(course.days * 0.2));
+    const learningDays = Math.max(1, course.days - revisionDays);
+    const topicsToUse = topics.slice(0, learningDays);
+    // If fewer topics than learning days, spread them out (repeat last topics get skipped, just fewer study days used)
+    const dayMap = new Array(course.days).fill(null);
+    for(let i = 0; i < topicsToUse.length; i++){
+      const dayIndex = Math.floor(i * learningDays / topicsToUse.length);
+      dayMap[dayIndex] = topicsToUse[i];
+    }
+    // fill revision days at the end
+    for(let d = learningDays; d < course.days; d++){
+      dayMap[d] = "Revision & practice problems";
+    }
+    // carry forward: any null day before deadline gets "Review & catch-up"
+    for(let d = 0; d < course.days; d++){
+      if(dayMap[d] === null) dayMap[d] = "Review & catch-up";
+    }
+    perCourseDayMap[course.name] = { dayMap, course };
+  });
+
+  const days = [];
+  for(let dayNum = 1; dayNum <= maxDays; dayNum++){
+    const tasks = [];
+    courses.forEach(course => {
+      const info = perCourseDayMap[course.name];
+      if(dayNum <= course.days){
+        const topic = info.dayMap[dayNum - 1];
+        tasks.push({ course: course.name, topic, type: course.type });
+      }
+    });
+    if(tasks.length > 0){
+      const minutesPerTask = Math.round((hoursPerDay * 60) / tasks.length);
+      tasks.forEach(t => t.minutes = minutesPerTask);
+      days.push({ day: dayNum, tasks });
+    }
+  }
+  return { days };
+}
+
+let planData = null;
+let checkedTasks = {};
+let questionCounters = {}; // taskId -> rotation index for questions/selfcheck variety
+
+function generatePlan(){
+  clearError();
+  const courses = collectCourses();
+  const hoursPerDay = parseFloat(document.getElementById('hoursInput').value);
+
+  if(courses.length === 0){
+    showError('Add at least one course with a name and days-until-exam.');
+    return;
+  }
+  if(!hoursPerDay || hoursPerDay <= 0){
+    showError('Enter how many hours per day you actually have.');
+    return;
+  }
+
+  checkedTasks = {};
+  questionCounters = {};
+  planData = buildPlan(courses, hoursPerDay);
+  renderPlan(planData, courses, hoursPerDay);
+}
+document.getElementById('generateBtn').addEventListener('click', generatePlan);
+
+function renderPlan(plan, courses, hoursPerDay){
+  const out = document.getElementById('planOutput');
+  const totalTasks = plan.days.reduce((sum, d) => sum + d.tasks.length, 0);
+
+  let html = `
+    <div class="plan">
+      <div class="plan-title">Your plan</div>
+      <div class="plan-meta">${plan.days.length} days · ${courses.length} course${courses.length>1?'s':''} · ${hoursPerDay}h/day</div>
+      <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+      <div class="progress-label" id="progressLabel">0 of ${totalTasks} tasks done</div>
+      <div style="margin-top:20px;">
+  `;
+
+  plan.days.forEach((d, dayIdx) => {
+    html += `<div class="day"><div class="day-num">${d.day}<small>day</small></div><div>`;
+    d.tasks.forEach((t, taskIdx) => {
+      const taskId = `d${dayIdx}t${taskIdx}`;
+      const isRevision = t.topic.toLowerCase().includes('revision') || t.topic.toLowerCase().includes('review');
+      const explainFn = EXPLAIN_TEMPLATES[t.type] || EXPLAIN_TEMPLATES.mixed;
+      const explanation = isRevision
+        ? `Go back over this week's material for ${t.course}. Redo any practice problems you got wrong the first time, and skim the handout sections you found hardest.`
+        : explainFn(t.topic);
+      const questions = QUESTION_TEMPLATES.map(fn => fn(t.topic));
+
+      html += `
+        <div class="task ${isRevision ? 'revision' : ''}">
+          <div class="task-top">
+            <input type="checkbox" id="chk-${taskId}" onchange="toggleTask('${taskId}', ${totalTasks})">
+            <div style="flex:1;">
+              <div class="task-course">${escapeHtml(t.course)}</div>
+              <div class="task-topic" id="topic-${taskId}">${escapeHtml(t.topic)}</div>
+              <div class="task-explain">${escapeHtml(explanation)}</div>
+              <div class="task-minutes">~${t.minutes} min</div>
+              <details class="task-questions">
+                <summary>Revision questions</summary>
+                <ol>${questions.map(q => `<li>${escapeHtml(q)}</li>`).join('')}</ol>
+              </details>
+              <button class="quiz-btn" data-task-id="${taskId}" data-topic="${escapeHtml(t.topic)}" onclick="handleSelfCheckClick(this)">Get a self-check prompt</button>
+              <div id="quiz-${taskId}"></div>
+            </div>
+          </div>
+        </div>`;
+    });
+    html += `</div></div>`;
+  });
+
+  html += `</div></div>`;
+  out.innerHTML = html;
+}
+
+function toggleTask(taskId, totalTasks){
+  const checked = document.getElementById(`chk-${taskId}`).checked;
+  checkedTasks[taskId] = checked;
+  document.getElementById(`topic-${taskId}`).classList.toggle('done', checked);
+  const doneCount = Object.values(checkedTasks).filter(Boolean).length;
+  const pct = Math.round((doneCount/totalTasks)*100);
+  document.getElementById('progressFill').style.width = pct + '%';
+  document.getElementById('progressLabel').textContent = `${doneCount} of ${totalTasks} tasks done`;
+}
+
+function handleSelfCheckClick(btn){
+  const taskId = btn.dataset.taskId;
+  const topic = btn.dataset.topic;
+  const idx = (questionCounters[taskId] || 0) % SELFCHECK_PROMPTS.length;
+  questionCounters[taskId] = idx + 1;
+  const prompt = SELFCHECK_PROMPTS[idx](topic);
+  const box = document.getElementById(`quiz-${taskId}`);
+  box.innerHTML = `<div class="quiz-box">${escapeHtml(prompt)}</div>`;
+}
+
+function escapeHtml(str){
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+</script>
+</body>
+</html>
