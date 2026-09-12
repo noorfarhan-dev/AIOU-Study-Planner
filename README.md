@@ -8,7 +8,7 @@ AIOU Study Planner is a single-page web app for AIOU students who are self-study
 
 ## Why I Built It
 
-As an AIOU student, I juggle several courses at once with no fixed class schedule, self-studying from course handouts. A generic "study planner" that only handles one course at a time doesn't reflect how AIOU distance learning actually works — the real problem is deciding how to split a limited daily time budget across multiple courses with different urgency levels. I built this to solve that specific problem for myself, and as a project to demonstrate how I used Claude as a development partner while learning to build software.
+As an AIOU student, I juggle several courses at once , self-studying from course handouts. A generic "study planner" that only handles one course at a time doesn't reflect how AIOU distance and face-to-face learning actually works — the real problem is deciding how to split a limited daily time budget across multiple courses with different urgency levels. I built this to solve that specific problem for myself, and as a project to demonstrate how I used Claude as a development partner while learning to build software.
 
 ## Key Features
 
